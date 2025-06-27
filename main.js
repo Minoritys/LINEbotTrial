@@ -1,10 +1,11 @@
 const GEMINI_API_KEY =
   PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
+
 function main() {
   const systemInstruction = {
     parts: [
       {
-        text: "回答は必ず日本語で行ってください",
+        text: systemRule,
       },
     ],
   };
@@ -12,7 +13,7 @@ function main() {
     system_instruction: systemInstruction,
     contents: [
       {
-        parts: [{ text: "Explain how AI works in a few words" }],
+        parts: [{ text: prompt }],
       },
     ],
   };
