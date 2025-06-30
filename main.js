@@ -31,7 +31,8 @@ function callGeminiAPI(prompt) {
   try {
     response = UrlFetchApp.fetch(url, options);
   } catch (e) {
-    return "Gemini API Error\n" + e;
+    console.log("❌️接続失敗\n" + e);
+    return "エラーが発生しました";
   }
   const endTime = new Date().getTime();
   const responseTimeMs = endTime - startTime;
