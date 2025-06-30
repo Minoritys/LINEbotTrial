@@ -1,2 +1,2 @@
-const systemRule = `回答は必ず日本語で行うこと`;
-const prompt = `Explain how AI works in a few words`;
+const systemInstructionText = `- 必ず日本語で回答してください\n- 回答にマークダウン記法を使用しないでください`;
+const inputText = `API呼び出しのテストをしています。この文章はとどいていますか？`;
