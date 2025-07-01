@@ -9,11 +9,13 @@ function doPost(e) {
     const reply_token = event.replyToken;
     const eventType = event.type;
     const messageText = event.message.text;
-    const replyText = callGeminiAPI(messageText);
+    const userId = event.source.userId;
+    const replyText = callGeminiAPI(messageText, userId);
 
     if (!reply_token) {
       continue;
     }
+
     if (eventType == "message") sendReplyMessage(replyText, reply_token);
   }
   return;

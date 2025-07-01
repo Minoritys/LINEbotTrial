@@ -2,6 +2,8 @@ const GEMINI_API_KEY =
   PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
 
 function callGeminiAPI(prompt, userId) {
+  const cache = new customCache(userId);
+  const history = JSON.parse(cache.get("history") || "[]");
   log.log("🚀callGeminiAPI");
   const systemInstruction = {
     parts: [
@@ -10,11 +12,18 @@ function callGeminiAPI(prompt, userId) {
       },
     ],
   };
+
   const payload = {
     system_instruction: systemInstruction,
     contents: [
+      ...history,
       {
-        parts: [{ text: prompt }],
+        role: "user",
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
       },
     ],
   };
@@ -24,6 +33,7 @@ function callGeminiAPI(prompt, userId) {
     method: "POST",
     contentType: "application/json",
     payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
   };
 
   const startTime = new Date().getTime();
@@ -39,13 +49,30 @@ function callGeminiAPI(prompt, userId) {
   const responseTimeSec = (responseTimeMs / 1000).toFixed(2);
 
   const data = JSON.parse(response);
-  const content = data["candidates"][0]["content"]["parts"][0]["text"];
+  let modelResponse = data["candidates"][0]["content"]["parts"][0]["text"];
+  //文末の余分な改行を削除する
+  modelResponse = modelResponse.replace(/\n$/, "");
 
   log.log(`✅️接続成功\nレスポンス時間: ${responseTimeSec} 秒`);
-  return content;
-}
-
-function main() {
-  const result = callGeminiAPI(inputText);
-  log.log(result);
+  const newHistoryJson = [
+    ...(history.length > 30 ? history.slice(-30) : history),
+    {
+      role: "user",
+      parts: [
+        {
+          text: prompt,
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          text: modelResponse,
+        },
+      ],
+    },
+  ];
+  cache.put("history", JSON.stringify(newHistoryJson));
+  return modelResponse;
 }
