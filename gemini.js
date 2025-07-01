@@ -1,8 +1,8 @@
 const GEMINI_API_KEY =
   PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
 
-function callGeminiAPI(prompt) {
-  console.log("🚀callGeminiAPI");
+function callGeminiAPI(prompt, userId) {
+  log.log("🚀callGeminiAPI");
   const systemInstruction = {
     parts: [
       {
@@ -31,7 +31,7 @@ function callGeminiAPI(prompt) {
   try {
     response = UrlFetchApp.fetch(url, options);
   } catch (e) {
-    console.log("❌️接続失敗\n" + e);
+    log.log("❌️接続失敗\n" + e);
     return "エラーが発生しました";
   }
   const endTime = new Date().getTime();
@@ -41,11 +41,11 @@ function callGeminiAPI(prompt) {
   const data = JSON.parse(response);
   const content = data["candidates"][0]["content"]["parts"][0]["text"];
 
-  console.log(`✅️接続成功\nレスポンス時間: ${responseTimeSec} 秒`);
+  log.log(`✅️接続成功\nレスポンス時間: ${responseTimeSec} 秒`);
   return content;
 }
 
 function main() {
   const result = callGeminiAPI(inputText);
-  console.log(result);
+  log.log(result);
 }
