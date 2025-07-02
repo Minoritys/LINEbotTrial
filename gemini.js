@@ -175,20 +175,22 @@ function getWeatherOfYokohama(userId, userPrompt, cache, history) {
   log.log("🚀getWeatherOfYokohama");
   const url = "https://weathernews.jp/onebox/35.523920/139.625873/";
   let html = "";
+  let weatherInfo = "";
   try {
     html = UrlFetchApp.fetch(url).getContentText();
   } catch (e) {
     log.error("❌️WetherNewsのfetchに失敗\n" + e);
+    weatherInfo = "天気情報を取得できませんでした";
   }
   log.log("✅️WetherNewsのfetchに成功");
   const dom = HtmlParser.parse(html);
-  let weatherInfo = "";
   try {
     weatherInfo = dom.querySelectorAll(".modal__inner-text")[1].rawText;
+    log.log(`抽出した天気情報: ${weatherInfo}`);
   } catch (e) {
     log.error("❌️情報抽出に失敗\n" + e);
+    weatherInfo = "天気情報を取得できませんでした";
   }
-  log.log(`抽出した天気情報: ${weatherInfo}`);
 
   const newHistoryJson = [
     ...(history.length > 30 ? history.slice(-30) : history),
