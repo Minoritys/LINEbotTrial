@@ -30,14 +30,23 @@ function callGeminiAPI(prompt, userId) {
   const payload = {
     system_instruction: systemInstruction,
     contents: contents,
-    // tools: [
-    //   {
-    //     function_declarations: functionDefinitions,
-    //   },
-    // ],
+    tools: [
+      {
+        function_declarations: functionDefinitions,
+      },
+    ],
+    generationConfig: {
+      thinkingConfig: {
+        thinkingBudget: -1,
+        // Thinking off:
+        // thinkingBudget: 0
+        // Turn on dynamic thinking:
+        // "thinkingBudget": -1
+      },
+    },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=${GEMINI_API_KEY}`;
   const options = {
     method: "POST",
     contentType: "application/json",
@@ -72,7 +81,7 @@ function callGeminiAPI(prompt, userId) {
 
   let modelResponse = "";
   if (functionCall) {
-    log.log(`functionCall: ${functionCall}`);
+    log.log(`functionCall: ${JSON.stringify(functionCall)}`);
     if (functionCall.name === "clearConversationHistory") {
       modelResponse = clearConversationHistory(userId, userPrompt, cache);
       return modelResponse;
