@@ -55,3 +55,8 @@ class customLogger {
   }
 }
 const log = new customLogger();
+
+function test() {
+  log.log("test");
+  log.writeLogSheet("userId");
+}

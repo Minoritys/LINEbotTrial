@@ -5,6 +5,7 @@ function callGeminiAPI(prompt, userId) {
   const cache = new customCache(userId);
   const history = JSON.parse(cache.get("history") || "[]");
   log.log("🚀callGeminiAPI");
+  log.log(`user's prompt: ${prompt}`);
   const systemInstruction = {
     parts: [
       {
@@ -30,11 +31,11 @@ function callGeminiAPI(prompt, userId) {
   const payload = {
     system_instruction: systemInstruction,
     contents: contents,
-    tools: [
-      {
-        function_declarations: functionDefinitions,
-      },
-    ],
+    // tools: [
+    //   {
+    //     function_declarations: functionDefinitions,
+    //   },
+    // ],
   };
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -50,7 +51,7 @@ function callGeminiAPI(prompt, userId) {
   try {
     response = UrlFetchApp.fetch(url, options);
   } catch (e) {
-    log.log("❌️接続失敗\n" + e);
+    log.error("❌️callGeminiAPI失敗\n" + e);
     return "エラーが発生しました";
   }
   const endTime = new Date().getTime();
@@ -65,6 +66,7 @@ function callGeminiAPI(prompt, userId) {
 
   let modelResponse = "";
   if (functionCall) {
+    log.log(`functionCall: ${functionCall}`);
     if (functionCall.name === "clearConversationHistory") {
       modelResponse = clearConversationHistory(userId, prompt, cache);
       return modelResponse;
@@ -74,6 +76,7 @@ function callGeminiAPI(prompt, userId) {
     //文末の余分な改行を削除する
     modelResponse = text;
     modelResponse = modelResponse.replace(/\n$/, "");
+    log.log(`model's response: ${modelResponse}`);
     const newHistoryJson = [
       ...(history.length > 30 ? history.slice(-30) : history),
       {
@@ -136,13 +139,14 @@ function clearConversationHistory(userId, prompt, cache) {
   ];
   cache.put("history", JSON.stringify(newHistoryJson));
   modelResponse = callGeminiAPI("", userId);
+  modelResponse = modelResponse + "\n(function called)";
   return modelResponse;
 }
 
 function test() {
-  const cache = new customCache("test");
-  const text = "会話履歴を消してください";
-  const response = callGeminiAPI(text, "test");
+  const cache = new customCache("Ucbd62ea03fc03b6ceea69639b7fdc9de");
+  const text = "おはよ";
+  const response = callGeminiAPI(text, "Ucbd62ea03fc03b6ceea69639b7fdc9de");
   log.log(response);
   cache.remove("history");
 }
