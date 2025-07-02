@@ -1,7 +1,7 @@
 const GEMINI_API_KEY =
   PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
 
-function callGeminiAPI(prompt, userId) {
+function callGeminiAPI(prompt, userId, useStable = false) {
   log.log("🚀callGeminiAPI");
   const cache = new customCache(userId);
   const history = JSON.parse(cache.get("history") || "[]");
@@ -45,8 +45,12 @@ function callGeminiAPI(prompt, userId) {
       },
     },
   };
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=${GEMINI_API_KEY}`;
+  let url = "";
+  if (!useStable) {
+    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=${GEMINI_API_KEY}`;
+  } else {
+    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+  }
   const options = {
     method: "POST",
     contentType: "application/json",
@@ -60,6 +64,10 @@ function callGeminiAPI(prompt, userId) {
     response = UrlFetchApp.fetch(url, options);
   } catch (e) {
     log.error("❌️callGeminiAPI失敗\n" + e);
+    if (!useStable) {
+      log.log("stable model で再試行します");
+      return callGeminiAPI(userPrompt, userId, true);
+    }
     return "エラーが発生しました";
   }
   const endTime = new Date().getTime();
