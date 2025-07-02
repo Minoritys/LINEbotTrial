@@ -22,9 +22,20 @@
 
 # 使用方法
 
+※ Messaging API や clasp 、Gemini API の取得方法及び使用方法は他のブログなどを参考に
+
 1. git clone
 2. clasp create
 3. clasp push
 4. clasp open
-5. デプロイして webhook URL を取得する
-6. LINE の webhook URL を設定する
+5. スクリプトプロパティに以下を設定する
+
+   - LINE_API_KEY
+   - GEMINI_API_KEY
+   - SPREADSHEET_ID
+
+6. スプレッドシートに以下の名前でシートを作成する
+   - errorLog
+   - log
+7. デプロイして webhook URL を取得する
+8. LINE Messaging API の webhook URL を設定する
