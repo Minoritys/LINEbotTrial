@@ -95,7 +95,11 @@ function callGeminiAPI(prompt, userId, useStable = false) {
     log.log(`functionCall: ${JSON.stringify(functionCall)}`);
     if (functionCall.name === "clearConversationHistory") {
       modelResponse = clearConversationHistory(userId, userPrompt, cache);
-      return modelResponse;
+      return modelResponse + "\n(function called)";
+    }
+    if (functionCall.name === "getWeatherOfYokohama") {
+      modelResponse = getWeatherOfYokohama(userId, userPrompt, cache, history);
+      return modelResponse + "\n(function called)";
     }
   }
   if (text) {
@@ -164,9 +168,70 @@ function clearConversationHistory(userId, userPrompt, cache) {
     },
   ];
   cache.put("history", JSON.stringify(newHistoryJson));
-  modelResponse = callGeminiAPI("", userId);
-  modelResponse = modelResponse + "\n(function called)";
-  return modelResponse;
+  return callGeminiAPI("", userId);
+}
+
+function getWeatherOfYokohama(userId, userPrompt, cache, history) {
+  log.log("🚀getWeatherOfYokohama");
+  const url = "https://weathernews.jp/onebox/35.523920/139.625873/";
+  let html = "";
+  try {
+    html = UrlFetchApp.fetch(url).getContentText();
+  } catch (e) {
+    log.error("❌️WetherNewsのfetchに失敗\n" + e);
+  }
+  log.log("✅️WetherNewsのfetchに成功");
+  const dom = HtmlParser.parse(html);
+  let weatherInfo = "";
+  try {
+    weatherInfo = dom.querySelectorAll(".modal__inner-text")[1].rawText;
+  } catch (e) {
+    log.error("❌️情報抽出に失敗\n" + e);
+  }
+  log.log(`抽出した天気情報: ${weatherInfo}`);
+
+  const newHistoryJson = [
+    ...(history.length > 30 ? history.slice(-30) : history),
+    {
+      role: "user",
+      parts: [
+        {
+          text: userPrompt,
+        },
+      ],
+    },
+    {
+      role: "model",
+      parts: [
+        {
+          functionCall: {
+            name: "getWeatherOfYokohama",
+            args: {},
+          },
+        },
+      ],
+    },
+    {
+      role: "user",
+      parts: [
+        {
+          functionResponse: {
+            name: "getWeatherOfYokohama",
+            response: {
+              fetchTime: Utilities.formatDate(
+                new Date(),
+                "JST",
+                "yyyy/MM/dd HH:mm"
+              ),
+              weatherInfomation: weatherInfo,
+            },
+          },
+        },
+      ],
+    },
+  ];
+  cache.put("history", JSON.stringify(newHistoryJson));
+  return callGeminiAPI("", userId);
 }
 
 function test() {
