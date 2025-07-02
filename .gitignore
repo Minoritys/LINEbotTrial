@@ -1,4 +1,2 @@
-*
-!appsscript.json
-!**/*.js
-!.gitignore
+.clasp.json
+
