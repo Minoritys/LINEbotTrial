@@ -64,10 +64,6 @@ function callGeminiAPI(prompt, userId, useStable = false) {
     response = UrlFetchApp.fetch(url, options);
   } catch (e) {
     log.error("❌️callGeminiAPI失敗\n" + e);
-    if (!useStable) {
-      log.log("stable model で再試行します");
-      return callGeminiAPI(userPrompt, userId, true);
-    }
     return "エラーが発生しました";
   }
   const endTime = new Date().getTime();
@@ -82,6 +78,10 @@ function callGeminiAPI(prompt, userId, useStable = false) {
     text = data["candidates"][0]["content"]["parts"][0]["text"];
   } catch (e) {
     log.error("❌️Gemini API Error\n" + e + "\n" + JSON.stringify(data));
+    if (!useStable) {
+      log.log("stable model で再試行します");
+      return callGeminiAPI(userPrompt, userId, true);
+    }
     return "エラーが発生しました";
   }
 
@@ -167,7 +167,7 @@ function clearConversationHistory(userId, userPrompt, cache) {
 }
 
 function test() {
-  const text = "ここまでの会話履歴を忘れて";
+  const text = "ここまでの会話をわすれて";
   const response = callGeminiAPI(text, "test");
   log.log(response);
 }
