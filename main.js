@@ -2,26 +2,33 @@ const LINE_API_KEY =
   PropertiesService.getScriptProperties().getProperty("LINE_API_KEY");
 
 function doPost(e) {
-  log.log("🚀doPost");
-  const events = JSON.parse(e.postData.contents).events;
+  try {
+    log.log("🚀doPost");
+    const events = JSON.parse(e.postData.contents).events;
 
-  // https://developers.line.biz/ja/reference/messaging-api/#message-event
-  for (const event of events) {
-    const reply_token = event.replyToken;
-    const eventType = event.type;
-    log.log(`eventType: ${eventType}`);
-    const messageText = event.message.text;
-    const userId = event.source.userId;
-    const replyText = callGeminiAPI(messageText, userId);
+    // https://developers.line.biz/ja/reference/messaging-api/#message-event
+    for (const event of events) {
+      const reply_token = event.replyToken;
+      const eventType = event.type;
+      log.log(`eventType: ${eventType}`);
+      const userId = event.source.userId;
 
-    if (!reply_token) {
-      continue;
+      if (!reply_token) {
+        continue;
+      }
+
+      if (eventType == "message") {
+        const messageText = event.message.text;
+        let replyText = "";
+        if (messageText) {
+          replyText = callGeminiAPI(messageText, userId);
+          sendReplyMessage(replyText, reply_token);
+        }
+      }
+      log.writeLogSheet(userId);
     }
-
-    if (eventType == "message") {
-      sendReplyMessage(replyText, reply_token);
-    }
-    log.writeLogSheet(userId);
+  } catch (e) {
+    log.error(e);
   }
   return;
 }

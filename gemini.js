@@ -2,10 +2,11 @@ const GEMINI_API_KEY =
   PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
 
 function callGeminiAPI(prompt, userId) {
+  log.log("🚀callGeminiAPI");
   const cache = new customCache(userId);
   const history = JSON.parse(cache.get("history") || "[]");
-  log.log("🚀callGeminiAPI");
-  log.log(`user's prompt: ${prompt}`);
+  const userPrompt = prompt;
+  log.log(`user's prompt: ${userPrompt}`);
   const systemInstruction = {
     parts: [
       {
@@ -17,12 +18,12 @@ function callGeminiAPI(prompt, userId) {
   const contents = [...history];
 
   // ユーザーの入力があれば、それをcontentsに追加する
-  if (prompt) {
+  if (userPrompt) {
     contents.push({
       role: "user",
       parts: [
         {
-          text: prompt,
+          text: userPrompt,
         },
       ],
     });
@@ -57,18 +58,25 @@ function callGeminiAPI(prompt, userId) {
   const endTime = new Date().getTime();
   const responseTimeMs = endTime - startTime;
   const responseTimeSec = (responseTimeMs / 1000).toFixed(2);
-  log.log(`✅️接続成功\nレスポンス時間: ${responseTimeSec} 秒`);
 
   const data = JSON.parse(response);
-  const functionCall =
-    data["candidates"][0]["content"]["parts"][0]["functionCall"];
-  const text = data["candidates"][0]["content"]["parts"][0]["text"];
+  let functionCall = undefined;
+  let text = undefined;
+  try {
+    functionCall = data["candidates"][0]["content"]["parts"][0]["functionCall"];
+    text = data["candidates"][0]["content"]["parts"][0]["text"];
+  } catch (e) {
+    log.error("❌️Gemini API Error\n" + e + "\n" + JSON.stringify(data));
+    return "エラーが発生しました";
+  }
+
+  log.log(`✅️接続成功\nレスポンス時間: ${responseTimeSec} 秒`);
 
   let modelResponse = "";
   if (functionCall) {
     log.log(`functionCall: ${functionCall}`);
     if (functionCall.name === "clearConversationHistory") {
-      modelResponse = clearConversationHistory(userId, prompt, cache);
+      modelResponse = clearConversationHistory(userId, userPrompt, cache);
       return modelResponse;
     }
   }
@@ -83,7 +91,8 @@ function callGeminiAPI(prompt, userId) {
         role: "user",
         parts: [
           {
-            text: prompt,
+            //スタンプが送信された場合に undefined となるが、そのままだと次回APIに送信する際エラーになる
+            text: userPrompt || "",
           },
         ],
       },
@@ -101,14 +110,14 @@ function callGeminiAPI(prompt, userId) {
   }
 }
 
-function clearConversationHistory(userId, prompt, cache) {
+function clearConversationHistory(userId, userPrompt, cache) {
   log.log("🚀clearConversationHistory");
   const newHistoryJson = [
     {
       role: "user",
       parts: [
         {
-          text: prompt,
+          text: userPrompt,
         },
       ],
     },
@@ -144,9 +153,7 @@ function clearConversationHistory(userId, prompt, cache) {
 }
 
 function test() {
-  const cache = new customCache("Ucbd62ea03fc03b6ceea69639b7fdc9de");
   const text = "おはよ";
-  const response = callGeminiAPI(text, "Ucbd62ea03fc03b6ceea69639b7fdc9de");
+  const response = callGeminiAPI(text, "test");
   log.log(response);
-  cache.remove("history");
 }

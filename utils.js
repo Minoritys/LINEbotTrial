@@ -40,6 +40,7 @@ class customLogger {
   error(arg) {
     console.error(arg);
     this.errorSheet.appendRow([new Date(), arg]);
+    this.writeLogSheet("error");
   }
   writeLogSheet(userId) {
     this.logs.map((log) => {
@@ -55,8 +56,3 @@ class customLogger {
   }
 }
 const log = new customLogger();
-
-function test() {
-  log.log("test");
-  log.writeLogSheet("userId");
-}
