@@ -3,9 +3,10 @@ const GEMINI_API_KEY =
 
 function callGeminiAPI(prompt, userId, useStable = false) {
   log.log("🚀callGeminiAPI");
+  if (useStable) log.log("on Stable model");
   const cache = new customCache(userId);
   const history = JSON.parse(cache.get("history") || "[]");
-  const userPrompt = prompt || " ";
+  const userPrompt = prompt;
   log.log(`user's prompt: ${userPrompt}`);
   const systemInstruction = {
     parts: [
@@ -17,14 +18,16 @@ function callGeminiAPI(prompt, userId, useStable = false) {
 
   const contents = [
     ...history,
-    {
-      role: "user",
-      parts: [
-        {
-          text: userPrompt,
-        },
-      ],
-    },
+    userPrompt
+      ? {
+          role: "user",
+          parts: [
+            {
+              text: userPrompt,
+            },
+          ],
+        }
+      : undefined,
   ];
 
   const payload = {

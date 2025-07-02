@@ -18,7 +18,8 @@ function doPost(e) {
       }
 
       if (eventType == "message") {
-        const messageText = event.message.text;
+        let messageText = event.message.text;
+        if (!messageText) messageText = " ";
         let replyText = callGeminiAPI(messageText, userId);
         sendReplyMessage(replyText, reply_token);
       }
