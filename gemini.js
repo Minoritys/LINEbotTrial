@@ -5,7 +5,7 @@ function callGeminiAPI(prompt, userId) {
   log.log("🚀callGeminiAPI");
   const cache = new customCache(userId);
   const history = JSON.parse(cache.get("history") || "[]");
-  const userPrompt = prompt;
+  const userPrompt = prompt || " ";
   log.log(`user's prompt: ${userPrompt}`);
   const systemInstruction = {
     parts: [
@@ -15,19 +15,17 @@ function callGeminiAPI(prompt, userId) {
     ],
   };
 
-  const contents = [...history];
-
-  // ユーザーの入力があれば、それをcontentsに追加する
-  if (userPrompt) {
-    contents.push({
+  const contents = [
+    ...history,
+    {
       role: "user",
       parts: [
         {
           text: userPrompt,
         },
       ],
-    });
-  }
+    },
+  ];
 
   const payload = {
     system_instruction: systemInstruction,
@@ -91,8 +89,7 @@ function callGeminiAPI(prompt, userId) {
         role: "user",
         parts: [
           {
-            //スタンプが送信された場合に undefined となるが、そのままだと次回APIに送信する際エラーになる
-            text: userPrompt || "",
+            text: userPrompt,
           },
         ],
       },
@@ -153,7 +150,7 @@ function clearConversationHistory(userId, userPrompt, cache) {
 }
 
 function test() {
-  const text = "おはよ";
+  const text = "ここまでの会話履歴を忘れて";
   const response = callGeminiAPI(text, "test");
   log.log(response);
 }

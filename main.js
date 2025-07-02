@@ -19,11 +19,8 @@ function doPost(e) {
 
       if (eventType == "message") {
         const messageText = event.message.text;
-        let replyText = "";
-        if (messageText) {
-          replyText = callGeminiAPI(messageText, userId);
-          sendReplyMessage(replyText, reply_token);
-        }
+        let replyText = callGeminiAPI(messageText, userId);
+        sendReplyMessage(replyText, reply_token);
       }
       log.writeLogSheet(userId);
     }
