@@ -10,8 +10,8 @@ const functionDefinitions = [
     },
   },
   {
-    name: "getWeatherOfTokyo",
-    description: "東京の天気を取得します",
+    name: "getWeatherOfYokohama",
+    description: "横浜市港北区の天気情報を取得します",
     parameters: {
       type: "object",
       properties: {},
